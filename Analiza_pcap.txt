@@ -1,0 +1,86 @@
+1. Rezumat general:
+    Traficul analizat evidențiază un comportament repetitiv de conexiuni outbound inițiate de hostul 192.168.100.20 către 192.168.100.10 pe portul TCP 8443. 
+Fiecare conexiune este extrem de scurtă, criptată folosind TLSv1.3 și urmată de închidere imediată, ceea ce nu corespunde unui comportament normal de navigare web. 
+Prezența unor intervale variabile între conexiuni (jitter) indică un mecanism automatizat de tip beaconing, specific comunicațiilor Command and Control (C2).
+
+
+2. Domeniul Analizei (Scope)
+Analiza se concentrează pe traficul dintre un client intern (192.168.100.20) și un server (192.168.100.10). Toate comunicațiile sunt realizate pe portul TCP 8443, 
+utilizat frecvent ca alternativă la HTTPS pentru a evita filtrarea. Protocolul folosit este TLSv1.3, ceea ce face imposibilă inspectarea conținutului fără chei de 
+decriptare, limitând analiza la metadate.
+
+
+3. Modelul Conexiunii
+Fiecare sesiune urmează același tipar: handshake TCP (SYN, SYN-ACK, ACK), urmat de TLS Client Hello și Server Hello. După handshake, comunicarea trece rapid în faza de 
+Application Data criptată. Conexiunea este închisă aproape imediat prin FIN/ACK, sugerând un model de comunicare scurt și repetitiv, tipic pentru beaconing.
+
+
+4. Comportament de Beaconing
+Intervalele dintre conexiuni variază între aproximativ 7 și 13 secunde, ceea ce indică prezența jitter-ului. Această variație este intenționată pentru a evita detectarea 
+bazată pe intervale fixe. Acest tip de comportament este caracteristic framework-urilor moderne de atac, precum Cobalt Strike, Sliver sau alte tool-uri de 
+post-exploitation.
+
+
+5. Analiza TLS
+TLSv1.3 criptează aproape complet handshake-ul și datele transmise, ceea ce limitează vizibilitatea asupra conținutului. Cu toate acestea, analiza metadatelor 
+(timing, dimensiuni, frecvență) permite identificarea tiparelor suspecte. Trecerea rapidă de la handshake la Application Data indică un protocol automatizat, 
+nu trafic generat de utilizator.
+
+
+6. Tipare de Dimensiune a Pachetelor
+Dimensiunile pachetelor sunt extrem de consistente între sesiuni, în special în faza de handshake și schimb inițial de date. Această uniformitate sugerează
+utilizarea unor mesaje predefinite, caracteristice unui implant malware. Traficul legitim prezintă de obicei variații mai mari datorită conținutului dinamic.
+
+
+7. Durata Conexiunilor
+Fiecare conexiune durează doar câteva milisecunde înainte de a fi închisă. Acest comportament este tipic pentru mecanismele de beaconing, unde clientul trimite
+un „check-in” rapid și așteaptă eventuale comenzi. Durata scurtă reduce semnificativ vizibilitatea și riscul de detecție.
+
+
+
+8. Direcția Traficului
+Toate conexiunile sunt inițiate de hostul intern către server (outbound). Acest lucru este specific malware-ului, care evită conexiunile inbound ce ar putea 
+fi blocate de firewall. Majoritatea rețelelor permit outbound, ceea ce face această tehnică eficientă pentru exfiltrare și control.
+
+
+9. Utilizarea Portului
+Portul 8443 este folosit pentru a simula trafic HTTPS legitim. Acest port este frecvent permis în rețele, reducând suspiciunea. Malware-ul folosește adesea 
+astfel de porturi pentru a se ascunde în trafic aparent normal.
+
+
+
+10. Trafic Nesemnificativ (Noise)
+Au fost observate pachete ICMPv6 și mesaje de tip Windows Host Announcement. Acestea sunt normale într-o rețea locală și nu sunt corelate cu comportamentul suspect.
+Ele nu influențează concluzia analizei.
+
+
+
+11. Clasificare
+Traficul poate fi clasificat ca beaconing criptat suspect cu un nivel ridicat de încredere. Tiparele observate (intervale variabile, conexiuni scurte, consistență 
+în pachete) sunt specifice comunicațiilor C2. Acest comportament este frecvent întâlnit în scenarii de compromitere post-exploitation.
+
+
+12. Indicatori de Compromitere (IoCs)
+Host compromis: 192.168.100.20
+Server C2 suspect: 192.168.100.10
+Port: 8443/TCP
+Protocol: TLSv1.3
+Comportament: conexiuni repetitive, intervale jitter, pachete consistente
+Acești indicatori pot fi folosiți pentru detecție în SIEM, IDS/IPS sau alte soluții de monitorizare.
+
+
+13. Concluzie
+Traficul analizat prezintă toate caracteristicile unui mecanism de Command and Control modern. Utilizarea TLS, jitter-ului și conexiunilor scurte indică un nivel
+ridicat de stealth. Activitatea trebuie tratată ca fiind malițioasă până la proba contrarie.
+
+
+
+
+
+
+
+
+
+
+
+
