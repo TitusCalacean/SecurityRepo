@@ -1,0 +1,52 @@
+Rezumat pseudocod:
+
+if argc != 3: afișează utilizarea
+name = argv[1]; serial = argv[2]
+
+if strlen(name) < 4: respinge
+if formatul serialului nu este XXXX-XXXX-XXXX-XXXX: respinge
+
+h = mix_name(name)
+f = fold_serial(serial)
+
+parts = parsează cele patru grupuri hex
+
+verifică parts[0..3] conform formulelor derivate din h și părțile anterioare
+verifică dacă byte-ul inferior din (f XOR h) == 0x5a
+
+acceptă doar dacă toate verificările sunt trecute
+
+
+
+-main
+
+Punctul de intrare și gestionarea argumentelor.
+Necesită argc == 3.
+Folosește argv[1] ca nume și argv[2] ca serial.
+Apelează check_serial și afișează ACCESS GRANTED sau ACCESS DENIED.
+
+-check_serial
+
+Rutina principală de validare.
+Primește numele și serialul.
+Respinge numele prea scurte.
+Apelează parse_parts, mix_name și fold_serial.
+Compară cele patru părți de 16 biți ale serialului cu constrângeri calculate.
+
+-parse_parts
+
+Parser pentru formatul serialului.
+Așteaptă lungimea 19 și formatul XXXX-XXXX-XXXX-XXXX.
+Convertește fiecare grup din hexazecimal în uint16.
+
+- mix_name
+
+Funcție de hash pentru nume.
+Parcurge numele până la caracterul null.
+Folosește rotire la stânga (rotate-left), XOR, adunări și constante dependente de index.
+
+-fold_serial
+
+Funcție de hash pentru serial.
+Parcurge caracterele serialului, ignoră cratimele, acceptă doar cifre și A–F.
+Actualizează un acumulator diferit pentru cifre față de litere hexazecimale.
